@@ -73,7 +73,7 @@ def train(name,model, split):
     y_test_pred = y_test_pred.cpu()
     mse = mean_squared_error(y_test, y_test_pred) * y_std
     rmse = np.sqrt(mse)
-    r2 = r2_score(y_test, y_test_pred) * y_std
+    r2 = r2_score(y_test, y_test_pred)
     mae = mean_absolute_error(y_test, y_test_pred) * y_std
 
     plotting_parity(T_pred=y_test_pred,T_test=y_test,model_name=name,fold=split)
@@ -100,7 +100,7 @@ def train_ml(name,model, split):
 
     mse = mean_squared_error(y_test, y_test_pred) * y_std
     rmse = np.sqrt(mse)
-    r2 = r2_score(y_test, y_test_pred) * y_std
+    r2 = r2_score(y_test, y_test_pred)
     mae = mean_absolute_error(y_test, y_test_pred) * y_std
     plotting_parity(T_pred=y_test_pred,T_test=y_test,model_name=name,fold=split)
     return mse,rmse,r2,mae
