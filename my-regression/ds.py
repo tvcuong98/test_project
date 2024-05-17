@@ -42,7 +42,7 @@ class QM7(Dataset):
             X_proc.append(x[np.triu_indices(23)])
         self.X = np.vstack(X_proc)
         # now the X.shape is still Bx276 (23x23=529 != 276)
-        self.X,self.y = transform(self.X,self.y,"hard_coded")
+        # self.X,self.y = transform(self.X,self.y,"hard_coded")
         """
         In-depth explaination:
         
