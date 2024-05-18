@@ -45,6 +45,9 @@ def train(name,model, split):
     x_mean, x_std = 1.6812959, 6.700323
     y_mean, y_std = -1538.0377, 223.91891
 
+    x_mean, x_std = 0, 1
+    y_mean, y_std = 0,1
+
 
     x = (torch.Tensor(ds_train.X).cuda() - x_mean) / x_std
     y = (torch.Tensor(ds_train.y).cuda() - y_mean) / y_std
@@ -87,6 +90,8 @@ def train_ml(name,model, split):
     x_mean, x_std = 1.6812959, 6.700323
     y_mean, y_std = -1538.0377, 223.91891
 
+    x_mean, x_std = 0, 1
+    y_mean, y_std = 0,1
 
     x = (torch.Tensor(ds_train.X) - x_mean) / x_std
     y = (torch.Tensor(ds_train.y) - y_mean) / y_std
@@ -109,7 +114,7 @@ def train_ml(name,model, split):
 # Define the models:
 models = {
     #PyTorch-based MLP for GPU acceleration
-    # "Linear Regression": LinearRegression(),
+    "Linear Regression": LinearRegression(),
     "Multilayer Perceptron": torch.nn.Sequential(
         torch.nn.Linear(276, 256),
         torch.nn.ReLU(),
