@@ -69,7 +69,7 @@ def train(name,model, split):
             scaler.step(optimizer)
             scaler.update()
             model.zero_grad(set_to_none=True)
-            print(loss)
+            # print(loss)
     model.eval()
     with torch.no_grad():
         y_test_pred= model(x_test)
@@ -112,45 +112,60 @@ def train_ml(name,model, split):
 
 
 # Define the models:
-models = {
+models = ["Multilayer Perceptron","Linear Regression","Support Vector Regression","Kernel Ridge Regression","Gaussian Process Regression"]
     #PyTorch-based MLP for GPU acceleration
     # "Linear Regression": LinearRegression(),
-    "Multilayer Perceptron": torch.nn.Sequential(
-        torch.nn.Linear(276, 256),
-        torch.nn.ReLU(),
-        torch.nn.Linear(256, 256),
-        torch.nn.ReLU(),
-        torch.nn.Linear(256, 128),
-        torch.nn.ReLU(),
-        torch.nn.Linear(128, 1)),
-    "Support Vector Regression": SVR(kernel="rbf"),
-    "Gaussian Process Regression": GaussianProcessRegressor(kernel=RBF(), random_state=0),
-    "Kernel Ridge Regression": KernelRidge(alpha=1.0, kernel='rbf'),  # Add KRR
-}
+#     "Multilayer Perceptron": torch.nn.Sequential(
+#         torch.nn.Linear(276, 256),
+#         torch.nn.ReLU(),
+#         torch.nn.Linear(256, 256),
+#         torch.nn.ReLU(),
+#         torch.nn.Linear(256, 128),
+#         torch.nn.ReLU(),
+#         torch.nn.Linear(128, 1)),
+#     "Support Vector Regression": SVR(kernel="rbf"),
+#     "Gaussian Process Regression": GaussianProcessRegressor(kernel=RBF(), random_state=0),
+#     "Kernel Ridge Regression": KernelRidge(alpha=1.0, kernel='rbf'),  # Add KRR
+# }
 
 # Create output directory if it doesn't exist
 output_dir = 'my-regression/output_ml'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-for name, model in models.items():
+for name in models:
     mse_list =[]
     rmse_list = []
     r2_list=[]
     mae_list=[]
     for fold in range(5):
         if name == "Multilayer Perceptron":
+            model=torch.nn.Sequential(
+                    torch.nn.Linear(276, 256),
+                    torch.nn.ReLU(),
+                    torch.nn.Linear(256, 256),
+                    torch.nn.ReLU(),
+                    torch.nn.Linear(256, 128),
+                    torch.nn.ReLU(),
+                    torch.nn.Linear(128, 1))
             mse,rmse,r2,mae = train(name,model,fold)
-            mse_list.append(mse)
-            rmse_list.append(rmse)
-            r2_list.append(r2)
-            mae_list.append(mae)
-        else:
+
+        elif name == "Linear Regression":
+            model = LinearRegression()
             mse,rmse,r2,mae = train_ml(name,model,fold)
-            mse_list.append(mse)
-            rmse_list.append(rmse)
-            r2_list.append(r2)
-            mae_list.append(mae)
+        elif name == "Support Vector Regression":
+            model = SVR(kernel="rbf")
+            mse,rmse,r2,mae = train_ml(name,model,fold)
+        elif name == "Kernel Ridge Regression":
+            model =  KernelRidge(alpha=1.0, kernel='rbf')
+            mse,rmse,r2,mae = train_ml(name,model,fold)
+        elif name == "Gaussian Process Regression":
+            model =  GaussianProcessRegressor(kernel=RBF(), random_state=0)
+            mse,rmse,r2,mae = train_ml(name,model,fold)
+        mse_list.append(mse)
+        rmse_list.append(rmse)
+        r2_list.append(r2)
+        mae_list.append(mae)
     print(f"\n{name}:")
     print(f"  Mean Squared Error: {np.mean(mse_list):.4f}")
     print(f"  Root Mean Squared Error: {np.mean(rmse_list):.4f}")

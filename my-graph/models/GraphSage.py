@@ -48,7 +48,7 @@ class GraphSage(MessagePassing):
         out = torch_scatter.scatter(inputs, index, node_dim, dim_size=dim_size, reduce='mean') # see https://pytorch-scatter.readthedocs.io/en/latest/functions/scatter.html#torch_scatter.scatter
         return out
 class GraphSageRegression(nn.Module):
-    def __init__(self, in_channels,out_channels,hid_channels=64,normalize = True):
+    def __init__(self, in_channels,out_channels,hid_channels=64,normalize = False):
         
         super().__init__()
          
