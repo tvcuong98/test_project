@@ -43,10 +43,10 @@ delete_all_files_in_folder(processed_path)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # device = "cpu"
 
-model = GAT(4).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
 
 for fold in range(5):
+    model = GAT(4).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
     model.train()
     fold_train = QM7(root=root,train=True,split=fold)
     fold_test = QM7(root=root,train=False,split=fold)
@@ -54,13 +54,26 @@ for fold in range(5):
 
     train_loader = DataLoader(fold_train, batch_size=64, shuffle=True)
     test_loader = DataLoader(fold_test, batch_size=64, shuffle=False)
-    for epoch in range(100000):
+    model.train()
+    for epoch in range(100):
+        running_train_loss = 0.0
         for step, data in enumerate(train_loader):
             data.to(device)
             optimizer.zero_grad()
             out = model(data)
-            loss = nn.MSELoss()(out, data.y)
-            loss.backward()
+            label = data.y
+            train_loss = nn.MSELoss()(out, data.y)
+            running_train_loss+=train_loss
+            train_loss.backward()
             optimizer.step()
-        if epoch%1 == 0:
-            print(loss)
+        print(f"Epoch_{epoch}: loss_{running_train_loss/step}")
+    model.eval()
+    running_val_loss = 0.0
+    for step, data in enumerate(test_loader):
+        data.to(device)
+        optimizer.zero_grad()
+        out = model(data)
+        label = data.y
+        val_loss = nn.MSELoss()(out, label)
+        running_val_loss+=val_loss
+    print(running_val_loss/step)

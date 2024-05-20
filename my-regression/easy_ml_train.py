@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 
 # Evaluation
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
-
+import xgboost as xgb
 # models 
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
@@ -42,8 +42,8 @@ def train(name,model, split):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0003)
 
-    x_mean, x_std = 1.6812959, 6.700323
-    y_mean, y_std = -1538.0377, 223.91891
+    # x_mean, x_std = 1.6812959, 6.700323
+    # y_mean, y_std = -1538.0377, 223.91891
 
     x_mean, x_std = 0, 1
     y_mean, y_std = 0,1
@@ -87,8 +87,8 @@ def train_ml(name,model, split):
     ds_test = QM7('qm7.mat', train=False, split=split)
 
 
-    x_mean, x_std = 1.6812959, 6.700323
-    y_mean, y_std = -1538.0377, 223.91891
+    # x_mean, x_std = 1.6812959, 6.700323
+    # y_mean, y_std = -1538.0377, 223.91891
 
     x_mean, x_std = 0, 1
     y_mean, y_std = 0,1
@@ -102,7 +102,6 @@ def train_ml(name,model, split):
 
     model.fit(x,y)
     y_test_pred = model.predict(x_test)
-
     mse = mean_squared_error(y_test, y_test_pred) * y_std
     rmse = np.sqrt(mse)
     r2 = r2_score(y_test, y_test_pred)
@@ -129,7 +128,7 @@ models = {
 }
 
 # Create output directory if it doesn't exist
-output_dir = 'output_ml'
+output_dir = 'my-regression/output_ml'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
