@@ -4,6 +4,7 @@
 *output*/
 *.zip
 *__pycache__*/
+my-graph/datasets/
 
 
 

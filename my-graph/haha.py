@@ -37,19 +37,18 @@ delete_all_files_in_folder(processed_path)
 #     print(f'Number of test graphs: {len(testset)}')
 # display_dataset_discription(data_fold_train[2])
 
-
-
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # device = "cpu"
 
-model = GCNConv(4,1,final=True).to(device)
+model = GCNConv(4,1,32,final=True).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
 
 for fold in range(5):
     model.train()
-    fold_train = QM7(root=root,pre_transform=pre_normalize_feature_label,train=True,split=fold)
-    fold_test = QM7(root=root,pre_transform=pre_normalize_feature_label,train=False,split=fold)
+    fold_train = QM7(root=root,train=True,split=fold)
+    fold_test = QM7(root=root,train=False,split=fold)
+    print(f'Number of graphs: {len(fold_train)}')
+    print(f'Number of graphs: {len(fold_test)}')
 
 
     train_loader = torch_geometric.loader.DataLoader(fold_train, batch_size=64, shuffle=True)
@@ -63,7 +62,7 @@ for fold in range(5):
             optimizer.zero_grad()
             out = model(data)
             # print(out.shape)
-            loss = nn.MSELoss()(out, data.y)
+            loss =nn.L1Loss()(out, data.y)
             loss.backward()
             optimizer.step()
         if epoch%1 == 0:
@@ -73,8 +72,7 @@ for fold in range(5):
             for step, data in enumerate(test_loader):
                 data.to(device)
                 out = model(data)
-                out = out * 223.91891 + -1538.0377
-                loss = nn.MSELoss()(out,data.y)
+                loss = nn.L1Loss()(out,data.y)
                 running_test_loss+=loss
             print(f"test:{running_test_loss}")
 
