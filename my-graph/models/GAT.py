@@ -84,28 +84,24 @@ class GAT(torch.nn.Module):
         self.out_head = 1
         
         
-        self.conv1 = GATConv(num_node_features, self.hid, heads=self.in_head, dropout=0.1)
-        self.conv2 = GATConv(self.hid*self.in_head, self.hid*self.in_head, heads=self.out_head, dropout=0.1)
-        self.conv3 = GATConv(self.hid*self.in_head, self.hid*self.in_head, heads=self.out_head, dropout=0.1)
-        self.conv4 = GATConv(self.hid*self.in_head, num_node_features, concat=False,
-                             heads=self.out_head, dropout=0.1)
+        self.conv1 = GATConv(num_node_features, 4, heads=self.out_head, dropout=0.1)
         self.linear = torch.nn.Linear(4, 1)
     def forward(self, data):
         x, edge_index = data.x, data.edge_index
         # print(x)
         x = F.dropout(x, p=0.1, training=self.training)
         x = self.conv1(x, edge_index)
-        # print(x)
-        x = F.elu(x)
-        x = F.dropout(x, p=0.1, training=self.training)
-        x = self.conv2(x, edge_index) # 23,4
-        # print(x)
-        x = self.conv2(x, edge_index) # 23,4
-        # print(x)
-        x = self.conv4(x, edge_index) # 23,4
-        # print(x)
-        # Aggregate node features, here we use mean aggregation
-        # x = torch.mean(x, dim=0) # 4
+        # # print(x)
+        # x = F.elu(x)
+        # x = F.dropout(x, p=0.1, training=self.training)
+        # x = self.conv2(x, edge_index) # 23,4
+        # # print(x)
+        # x = self.conv2(x, edge_index) # 23,4
+        # # print(x)
+        # x = self.conv4(x, edge_index) # 23,4
+        # # print(x)
+        # # Aggregate node features, here we use mean aggregation
+        # # x = torch.mean(x, dim=0) # 4
         x = global_max_pool(x, data.batch)
         x = self.linear(x)
         # print(x)

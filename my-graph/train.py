@@ -9,9 +9,10 @@ import torch.nn as nn
 from models.GAT import GAT
 import os
 import glob
+import numpy as np
 from display_utils import display_dataset_discription
 from disk_utils import delete_all_files_in_folder
-
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 ### Dealing with dataset:
 root = "/home/edabk/cuong/test_project/my-graph/datasets/qm7"
 processed_path="/home/edabk/cuong/test_project/my-graph/datasets/qm7/processed"
@@ -46,7 +47,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 for fold in range(5):
     model = GAT(4).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.1, weight_decay=5e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
     model.train()
     fold_train = QM7(root=root,train=True,split=fold)
     fold_test = QM7(root=root,train=False,split=fold)
@@ -55,7 +56,7 @@ for fold in range(5):
     train_loader = DataLoader(fold_train, batch_size=1024, shuffle=True)
     test_loader = DataLoader(fold_test, batch_size=1024, shuffle=False)
     model.train()
-    for epoch in range(10000):
+    for epoch in range(1000):
         running_train_loss = 0.0
         for step, data in enumerate(train_loader):
             data.to(device)
@@ -68,12 +69,25 @@ for fold in range(5):
             optimizer.step()
         print(f"Epoch_{epoch}: loss_{running_train_loss/step}")
     model.eval()
-    running_val_loss = 0.0
+    running_val_loss = []
+    running_val_mse =[]
+    running_val_rmse =[]
+    running_val_r2 =[]
+    running_val_mae =[]
     for step, data in enumerate(test_loader):
         data.to(device)
         optimizer.zero_grad()
-        out = model(data)
-        label = data.y
+        out = model(data).cpu().detach()
+        label = data.y.cpu().detach()
         val_loss = nn.MSELoss()(out, label)
-        running_val_loss+=val_loss
-    print(running_val_loss/step)
+        running_val_loss.append(val_loss)
+        running_val_mse.append(mean_squared_error(label, out))
+        running_val_rmse.append(np.sqrt(mean_squared_error(label, out)))
+        running_val_r2.append(r2_score(label, out))
+        running_val_mae.append(mean_absolute_error(label,out))
+
+    print(f"  MSE LOSS VAL: {np.mean(running_val_loss):.4f}")
+    print(f"  Mean Squared Error: {np.mean(running_val_mse):.4f}")
+    print(f"  Root Mean Squared Error: {np.mean(running_val_rmse):.4f}")
+    print(f"  R-squared: {np.mean(running_val_r2):.4f}")
+    print(f"  Mean Absolute Error: {np.mean(running_val_mae):.4f}")

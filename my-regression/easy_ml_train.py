@@ -69,6 +69,7 @@ def train(name,model, split):
             scaler.step(optimizer)
             scaler.update()
             model.zero_grad(set_to_none=True)
+            print(loss)
     model.eval()
     with torch.no_grad():
         y_test_pred= model(x_test)
@@ -113,7 +114,7 @@ def train_ml(name,model, split):
 # Define the models:
 models = {
     #PyTorch-based MLP for GPU acceleration
-    "Linear Regression": LinearRegression(),
+    # "Linear Regression": LinearRegression(),
     "Multilayer Perceptron": torch.nn.Sequential(
         torch.nn.Linear(276, 256),
         torch.nn.ReLU(),

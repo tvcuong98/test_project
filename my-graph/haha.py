@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 import random
 import torch.nn as nn
 from models.GCN import GCNConv
+from models.GraphSage import GraphSage,GraphSageRegression
 import os
 import glob
 from display_utils import display_dataset_discription
@@ -40,10 +41,11 @@ delete_all_files_in_folder(processed_path)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # device = "cpu"
 
-model = GCNConv(4,1,32,final=True).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
+
 
 for fold in range(5):
+    model = GraphSageRegression(4,4).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
     model.train()
     fold_train = QM7(root=root,train=True,split=fold)
     fold_test = QM7(root=root,train=False,split=fold)
@@ -62,7 +64,7 @@ for fold in range(5):
             optimizer.zero_grad()
             out = model(data)
             # print(out.shape)
-            loss =nn.L1Loss()(out, data.y)
+            loss =nn.MSELoss()(out, data.y)
             loss.backward()
             optimizer.step()
         if epoch%1 == 0:
@@ -72,7 +74,7 @@ for fold in range(5):
             for step, data in enumerate(test_loader):
                 data.to(device)
                 out = model(data)
-                loss = nn.L1Loss()(out,data.y)
+                loss = nn.MSELoss()(out,data.y)
                 running_test_loss+=loss
             print(f"test:{running_test_loss}")
 
