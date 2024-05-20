@@ -122,7 +122,7 @@ models = {
         torch.nn.Linear(256, 128),
         torch.nn.ReLU(),
         torch.nn.Linear(128, 1)),
-    "Support Vector Regression": SVR(kernel="poly"),
+    "Support Vector Regression": SVR(kernel="rbf"),
     "Gaussian Process Regression": GaussianProcessRegressor(kernel=RBF(), random_state=0),
     "Kernel Ridge Regression": KernelRidge(alpha=1.0, kernel='rbf'),  # Add KRR
 }

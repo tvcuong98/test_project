@@ -46,16 +46,16 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 for fold in range(5):
     model = GAT(4).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.1, weight_decay=5e-4)
     model.train()
     fold_train = QM7(root=root,train=True,split=fold)
     fold_test = QM7(root=root,train=False,split=fold)
 
 
-    train_loader = DataLoader(fold_train, batch_size=64, shuffle=True)
-    test_loader = DataLoader(fold_test, batch_size=64, shuffle=False)
+    train_loader = DataLoader(fold_train, batch_size=1024, shuffle=True)
+    test_loader = DataLoader(fold_test, batch_size=1024, shuffle=False)
     model.train()
-    for epoch in range(100):
+    for epoch in range(10000):
         running_train_loss = 0.0
         for step, data in enumerate(train_loader):
             data.to(device)

@@ -106,7 +106,7 @@ class GAT(torch.nn.Module):
         # print(x)
         # Aggregate node features, here we use mean aggregation
         # x = torch.mean(x, dim=0) # 4
-        x = global_mean_pool(x, data.batch)
+        x = global_max_pool(x, data.batch)
         x = self.linear(x)
         # print(x)
         return x
