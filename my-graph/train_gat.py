@@ -66,7 +66,7 @@ for fold in range(5):
     rmse_list = []
     r2_list=[]
     mae_list=[]
-    model = GAT(4).to(device)
+    model = GAT(4,4).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
     model.train()
     fold_train = QM7(root=root,train=True,split=fold)
