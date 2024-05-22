@@ -110,8 +110,9 @@ def train_ml(name, split,mode):
     elif mode =="normal":
         ds_train = QM7('qm7.mat', train=True, split=split)
         ds_test = QM7('qm7.mat', train=False, split=split)
-    elif name == "Linear Regression":
+    if name == "Linear Regression":
         model = LinearRegression()
+        print("haha")
 
     elif name == "Support Vector Regression":
         model = SVR(kernel="linear")
