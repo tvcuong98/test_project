@@ -100,7 +100,7 @@ def train(name, split,mode):
     r2 = r2_score(y_test, y_test_pred)
     mae = mean_absolute_error(y_test, y_test_pred) * y_std
 
-    plotting_parity(T_pred=y_test_pred,T_test=y_test,model_name=name,fold=split)
+    plotting_parity(T_pred=y_test_pred,T_test=y_test,model_name=name,fold=split,mode=mode)
     return mse,rmse,r2,mae
 
 def train_ml(name, split,mode):
