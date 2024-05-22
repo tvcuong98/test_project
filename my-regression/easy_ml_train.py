@@ -1,4 +1,4 @@
-from ds import QM7
+from ds import QM7,QM7_Deluxe
 import torch
 from torch import nn
 import numpy as np
@@ -17,11 +17,12 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 
+
 # def mae(y_pred, y_true):
 #     return torch.abs(y_pred - y_true).mean()
 
 def plotting_parity(T_pred,T_test,model_name,fold):
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(6, 6))
     plt.scatter(T_test, T_pred, color='green', label='Predicted vs Actual')
     plt.plot([min(T_test), max(T_test)], [min(T_test), max(T_test)], 'r--', label='Perfect Prediction')
     plt.title(f'{name} - Predicted vs Actual')
@@ -33,10 +34,29 @@ def plotting_parity(T_pred,T_test,model_name,fold):
     plt.savefig(plot_filename)
     print(f"Plot saved as {plot_filename}")
     plt.close()
-def train(name,model, split):
-    ds_train = QM7('qm7.mat', train=True, split=split)
-    ds_test = QM7('qm7.mat', train=False, split=split)
-
+def train(name, split,mode):
+    if mode =="deluxe":
+        ds_train = QM7_Deluxe('qm7.mat', train=True, split=split)
+        ds_test = QM7_Deluxe('qm7.mat', train=False, split=split)
+        model=torch.nn.Sequential(
+                    torch.nn.Linear(575, 512),
+                    torch.nn.ReLU(),
+                    torch.nn.Linear(512, 256),
+                    torch.nn.ReLU(),
+                    torch.nn.Linear(256, 128),
+                    torch.nn.ReLU(),
+                    torch.nn.Linear(128, 1))
+    elif mode =="normal":
+        ds_train = QM7('qm7.mat', train=True, split=split)
+        ds_test = QM7('qm7.mat', train=False, split=split)
+        model=torch.nn.Sequential(
+                    torch.nn.Linear(276, 256),
+                    torch.nn.ReLU(),
+                    torch.nn.Linear(256, 256),
+                    torch.nn.ReLU(),
+                    torch.nn.Linear(256, 128),
+                    torch.nn.ReLU(),
+                    torch.nn.Linear(128, 1))
     model = model.cuda()
     model.train()
 
@@ -83,13 +103,25 @@ def train(name,model, split):
     plotting_parity(T_pred=y_test_pred,T_test=y_test,model_name=name,fold=split)
     return mse,rmse,r2,mae
 
-def train_ml(name,model, split):
-    ds_train = QM7('qm7.mat', train=True, split=split)
-    ds_test = QM7('qm7.mat', train=False, split=split)
+def train_ml(name, split,mode):
+    if mode =="deluxe":
+        ds_train = QM7_Deluxe('qm7.mat', train=True, split=split)
+        ds_test = QM7_Deluxe('qm7.mat', train=False, split=split)
+    elif mode =="normal":
+        ds_train = QM7('qm7.mat', train=True, split=split)
+        ds_test = QM7('qm7.mat', train=False, split=split)
+    elif name == "Linear Regression":
+        model = LinearRegression()
 
+    elif name == "Support Vector Regression":
+        model = SVR(kernel="linear")
 
-    # x_mean, x_std = 1.6812959, 6.700323
-    # y_mean, y_std = -1538.0377, 223.91891
+    elif name == "Kernel Ridge Regression":
+        model =  KernelRidge(alpha=1.0, kernel='linear')
+
+    elif name == "Gaussian Process Regression":
+        kernel = 1 * RBF(length_scale=1.0, length_scale_bounds=(1e-2, 1e2))
+        model =  GaussianProcessRegressor(kernel=kernel, random_state=0)
 
     x_mean, x_std = 0, 1
     y_mean, y_std = 0,1
@@ -113,20 +145,6 @@ def train_ml(name,model, split):
 
 # Define the models:
 models = ["Multilayer Perceptron","Linear Regression","Support Vector Regression","Kernel Ridge Regression","Gaussian Process Regression"]
-    #PyTorch-based MLP for GPU acceleration
-    # "Linear Regression": LinearRegression(),
-#     "Multilayer Perceptron": torch.nn.Sequential(
-#         torch.nn.Linear(276, 256),
-#         torch.nn.ReLU(),
-#         torch.nn.Linear(256, 256),
-#         torch.nn.ReLU(),
-#         torch.nn.Linear(256, 128),
-#         torch.nn.ReLU(),
-#         torch.nn.Linear(128, 1)),
-#     "Support Vector Regression": SVR(kernel="rbf"),
-#     "Gaussian Process Regression": GaussianProcessRegressor(kernel=RBF(), random_state=0),
-#     "Kernel Ridge Regression": KernelRidge(alpha=1.0, kernel='rbf'),  # Add KRR
-# }
 
 # Create output directory if it doesn't exist
 output_dir = 'my-regression/output_ml'
@@ -138,38 +156,20 @@ for name in models:
     rmse_list = []
     r2_list=[]
     mae_list=[]
-    for fold in range(5):
-        if name == "Multilayer Perceptron":
-            model=torch.nn.Sequential(
-                    torch.nn.Linear(276, 256),
-                    torch.nn.ReLU(),
-                    torch.nn.Linear(256, 256),
-                    torch.nn.ReLU(),
-                    torch.nn.Linear(256, 128),
-                    torch.nn.ReLU(),
-                    torch.nn.Linear(128, 1))
-            mse,rmse,r2,mae = train(name,model,fold)
-
-        elif name == "Linear Regression":
-            model = LinearRegression()
-            mse,rmse,r2,mae = train_ml(name,model,fold)
-        elif name == "Support Vector Regression":
-            model = SVR(kernel="rbf")
-            mse,rmse,r2,mae = train_ml(name,model,fold)
-        elif name == "Kernel Ridge Regression":
-            model =  KernelRidge(alpha=1.0, kernel='rbf')
-            mse,rmse,r2,mae = train_ml(name,model,fold)
-        elif name == "Gaussian Process Regression":
-            model =  GaussianProcessRegressor(kernel=RBF(), random_state=0)
-            mse,rmse,r2,mae = train_ml(name,model,fold)
-        mse_list.append(mse)
-        rmse_list.append(rmse)
-        r2_list.append(r2)
-        mae_list.append(mae)
-    print(f"\n{name}:")
-    print(f"  Mean Squared Error: {np.mean(mse_list):.4f}")
-    print(f"  Root Mean Squared Error: {np.mean(rmse_list):.4f}")
-    print(f"  R-squared: {np.mean(r2_list):.4f}")
-    print(f"  Mean Absolute Error: {np.mean(mae_list):.4f}")
+    for mode in ["deluxe","normal"]:
+        for fold in range(5):
+            if name == "Multilayer Perceptron":
+                mse,rmse,r2,mae = train(name,fold,mode)
+            else:
+                mse,rmse,r2,mae = train_ml(name,fold,mode)
+            mse_list.append(mse)
+            rmse_list.append(rmse)
+            r2_list.append(r2)
+            mae_list.append(mae)
+        print(f"\n{name}_{mode}:")
+        print(f"  Mean Squared Error: {np.mean(mse_list):.4f}")
+        print(f"  Root Mean Squared Error: {np.mean(rmse_list):.4f}")
+        print(f"  R-squared: {np.mean(r2_list):.4f}")
+        print(f"  Mean Absolute Error: {np.mean(mae_list):.4f}")
         
 

@@ -168,4 +168,39 @@ class QM7(InMemoryDataset):
         # self.save(data_list, self.processed_paths[0])        
         data,slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
+import scipy
+from torch.utils.data import Dataset
+import numpy as np
+class QM7_pytorch_dataset(Dataset):
+    def __init__(self, path, train=True, split=-1):
+        assert isinstance(split, int) and -1 <= split <= 4, 'Fold must be in range [-1, 4]'
+        super().__init__()
+        self.path = path
+        data = scipy.io.loadmat(path)
+        if split != -1:
+            split = data['P'][split]
+            mask = torch.zeros(data['T'].size, dtype=bool)
+            mask[split] = True
+            if train:
+                mask = ~mask
+            print(mask.shape)
+            self.X = data['X'][mask]
+            self.y = data['T'].T[mask]
+            self.R = data['R'][mask]
+            self.Z = data['Z'][mask]
+        else:
+            self.X = data['X']
+            self.y = data.T['T']
+            self.R = data['R']
+            self.Z = data['Z']
+        self.feature = np.concatenate((self.R, np.expand_dims(self.Z, axis=-1)), axis=-1)
 
+    def __len__(self):
+        return len(self.y)
+
+    def __getitem__(self, idx):
+        feature = self.feature[idx]
+        label = self.y[idx]
+        feature = torch.tensor(feature)
+        label = torch.tensor(label)
+        return feature, label
