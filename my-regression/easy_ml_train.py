@@ -21,7 +21,7 @@ from sklearn.gaussian_process.kernels import RBF
 # def mae(y_pred, y_true):
 #     return torch.abs(y_pred - y_true).mean()
 
-def plotting_parity(T_pred,T_test,model_name,fold):
+def plotting_parity(T_pred,T_test,model_name,fold,mode):
     plt.figure(figsize=(6, 6))
     plt.scatter(T_test, T_pred, color='green', label='Predicted vs Actual')
     plt.plot([min(T_test), max(T_test)], [min(T_test), max(T_test)], 'r--', label='Perfect Prediction')
@@ -30,7 +30,7 @@ def plotting_parity(T_pred,T_test,model_name,fold):
     plt.ylabel('Predicted Values')
     plt.legend()
     plt.grid(True)
-    plot_filename = os.path.join(output_dir, f'{model_name.replace(" ", "_")}_fold_{fold}_parity.png')
+    plot_filename = os.path.join(output_dir, f'{model_name.replace(" ", "_")}_{mode}_fold_{fold}_parity.png')
     plt.savefig(plot_filename)
     print(f"Plot saved as {plot_filename}")
     plt.close()
@@ -140,7 +140,7 @@ def train_ml(name, split,mode):
     rmse = np.sqrt(mse)
     r2 = r2_score(y_test, y_test_pred)
     mae = mean_absolute_error(y_test, y_test_pred) * y_std
-    plotting_parity(T_pred=y_test_pred,T_test=y_test,model_name=name,fold=split)
+    plotting_parity(T_pred=y_test_pred,T_test=y_test,model_name=name,fold=split,mode=mode)
     return mse,rmse,r2,mae
 
 
